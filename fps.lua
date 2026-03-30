@@ -65,10 +65,10 @@ end
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
-Lighting.Brightness               = 2
+Lighting.Brightness               = 5
 Lighting.ClockTime                = 14
 Lighting.GeographicLatitude       = 0
-Lighting.ExposureCompensation     = 0
+Lighting.ExposureCompensation     = 1
 Lighting.EnvironmentDiffuseScale  = 0
 Lighting.EnvironmentSpecularScale = 0
 Lighting.Ambient                  = Color3.fromRGB(255, 255, 255)
