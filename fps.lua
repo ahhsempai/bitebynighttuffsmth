@@ -24,6 +24,17 @@ local function removeChildrenByName(parent, name)
     end
 end
 
+local function removeChildrenExcept(parent, exceptions)
+    if not parent then return end
+    for _, child in ipairs(parent:GetChildren()) do
+        local keep = false
+        for _, name in ipairs(exceptions) do
+            if child.Name == name then keep = true break end
+        end
+        if not keep then child:Destroy() end
+    end
+end
+
 local function removeDescendantsByName(root, name)
     if not root then return end
     for _, obj in ipairs(root:GetDescendants()) do
@@ -65,10 +76,10 @@ end
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
-Lighting.Brightness               = 5
+Lighting.Brightness               = 2
 Lighting.ClockTime                = 14
 Lighting.GeographicLatitude       = 0
-Lighting.ExposureCompensation     = 1
+Lighting.ExposureCompensation     = 0
 Lighting.EnvironmentDiffuseScale  = 0
 Lighting.EnvironmentSpecularScale = 0
 Lighting.Ambient                  = Color3.fromRGB(255, 255, 255)
@@ -119,7 +130,7 @@ local mapConfigs = {
     },
     pizzeria = {
         {"MAPS", "GAME MAP", "Other", "DECORATION"},
-        {"MAPS", "GAME MAP", "Other", "ASSETS"},
+
         {"MAPS", "GAME MAP", "Other", "BOUNDARIES"},
         {"MAPS", "GAME MAP", "Other", "FENCES"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "LIGHTS"},
@@ -127,7 +138,6 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "PIPES"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SKIRTBOARD"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SPOTLIGHTS"},
-        {"MAPS", "GAME MAP", "Other", "STRUCTURE", "STAGE "},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TILES CERAMIC"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TRUSS"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "VENTS"},
@@ -161,6 +171,9 @@ local function optimizeGameMap(gameMap)
             if obj then obj:Destroy() end
         end
     end
+    local assets = getPath(workspace, {"MAPS", "GAME MAP", "Other", "ASSETS"})
+    removeChildrenExcept(assets, {"Security Doors"})
+
     local wallsWooden = getPath(workspace, {"MAPS", "GAME MAP", "Other", "WallsWooden"})
     if wallsWooden then
         removeChildrenByName(wallsWooden, "WallWooden")
@@ -177,7 +190,7 @@ if existingMap then optimizeGameMap(existingMap) end
 
 MAPS.ChildAdded:Connect(function(child)
     if child.Name == "GAME MAP" then
-        task.wait(5)
+        task.wait(2)
         optimizeGameMap(child)
     end
 end)
