@@ -24,6 +24,13 @@ local function removeChildrenByName(parent, name)
     end
 end
 
+local function removeDescendantsByName(root, name)
+    if not root then return end
+    for _, obj in ipairs(root:GetDescendants()) do
+        if obj.Name == name then obj:Destroy() end
+    end
+end
+
 local function removeChildrenExcept(parent, exceptions)
     if not parent then return end
     for _, child in ipairs(parent:GetChildren()) do
@@ -32,13 +39,6 @@ local function removeChildrenExcept(parent, exceptions)
             if child.Name == name then keep = true break end
         end
         if not keep then child:Destroy() end
-    end
-end
-
-local function removeDescendantsByName(root, name)
-    if not root then return end
-    for _, obj in ipairs(root:GetDescendants()) do
-        if obj.Name == name then obj:Destroy() end
     end
 end
 
@@ -73,6 +73,9 @@ local function nukeAllLights(root)
     Lighting.Brightness     = 2
 end
 
+------------------------------------------------------------------------
+-- POTATO LIGHTING
+------------------------------------------------------------------------
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
@@ -98,6 +101,9 @@ for _, child in ipairs(Lighting:GetChildren()) do
     end
 end
 
+------------------------------------------------------------------------
+-- LOBBY
+------------------------------------------------------------------------
 removeList({
     {"Lobby", "FullWinFolder", "1 Point"},
     {"Lobby", "LOBBY LIGHTS"},
@@ -111,8 +117,12 @@ if lobby then
     removeDescendantsByName(lobby, "PILLAR")
     removeDescendantsByName(lobby, "Paper Family DECO")
     removeDescendantsByName(lobby, "WALL GRUNGE")
+    optimizeMeshes(lobby)
 end
 
+------------------------------------------------------------------------
+-- MAP CONFIGS
+------------------------------------------------------------------------
 local mapConfigs = {
     warehouse = {
         {"MAPS", "GAME MAP", "Cameras"},
@@ -129,15 +139,15 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "Landmark"},
     },
     pizzeria = {
-        {"MAPS", "GAME MAP", "Other", "DECORATION"},
-
         {"MAPS", "GAME MAP", "Other", "BOUNDARIES"},
         {"MAPS", "GAME MAP", "Other", "FENCES"},
+        {"MAPS", "GAME MAP", "Other", "DECORATION"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "LIGHTS"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "PILLAR"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "PIPES"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SKIRTBOARD"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SPOTLIGHTS"},
+        {"MAPS", "GAME MAP", "Other", "STRUCTURE", "STAGE "},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TILES CERAMIC"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TRUSS"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "VENTS"},
@@ -164,6 +174,82 @@ local mapConfigs = {
     },
 }
 
+------------------------------------------------------------------------
+-- IGNORE FOLDER
+------------------------------------------------------------------------
+local ignoreRemoveAlways = {
+    "VFX", "Map Ambience/Light", "LIGHT SOURCE", "LIGHTING"
+}
+
+local ignoreRemoveByMap = {
+    forest    = {"Twigs [CASTSGADOW]", "Plant", "Naked Branches", "Canned Food [CASTSHADOW]", "Branches Filler", "BOUGHS", "Rocks2 [CASTSHADOW]"},
+    warehouse = {"Conveyor Variant B", "Evidence Mockup", "HOLSTER WALL FILLERS", "LIGHTING", "Junction Electricity", "MESH WALL", "Perforated Chain Metal Link", "Vent Lighting", "WStrip", "Wiring Screw", "YStrip", "YStriped Square"},
+    pizzeria  = {"Antislip Mat", "Arcade Actual Light", "Arcade Rod Ends", "BOUNDARY", "Balloon", "Bench Leather", "DECALS NORMALS", "Door Handle", "LIGHT", "Middle-Pipe", "Monitor", "Monitor Screen", "Pipe", "SkirtBoard", "Spotlight"},
+}
+
+local function applyBarrier(obj)
+    for _, desc in ipairs(obj:GetDescendants()) do
+        if desc:IsA("BasePart") then
+            desc.Color        = Color3.fromRGB(0, 0, 0)
+            desc.Transparency = 0.5
+        end
+    end
+    if obj:IsA("BasePart") then
+        obj.Color        = Color3.fromRGB(0, 0, 0)
+        obj.Transparency = 0.5
+    end
+end
+
+local function optimizeIgnoreChild(obj)
+    if obj.Name == "elevator" then return end
+
+    if obj.Name == "BARRIER" then
+        applyBarrier(obj)
+    end
+
+    -- SurfaceAppearance
+    for _, desc in ipairs(obj:GetDescendants()) do
+        if desc:IsA("SurfaceAppearance") then desc:Destroy() end
+    end
+
+    -- Always-remove names
+    for _, name in ipairs(ignoreRemoveAlways) do
+        removeDescendantsByName(obj, name)
+    end
+
+    -- Map-specific names (try all sets)
+    for _, names in pairs(ignoreRemoveByMap) do
+        for _, name in ipairs(names) do
+            removeDescendantsByName(obj, name)
+        end
+    end
+end
+
+local function setupIgnoreFolder(ignoreFolder)
+    for _, child in ipairs(ignoreFolder:GetChildren()) do
+        optimizeIgnoreChild(child)
+    end
+    ignoreFolder.ChildAdded:Connect(function(child)
+        task.wait(0.1)
+        optimizeIgnoreChild(child)
+    end)
+end
+
+local ignoreFolder = workspace:FindFirstChild("IGNORE")
+if ignoreFolder then
+    setupIgnoreFolder(ignoreFolder)
+end
+
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "IGNORE" then
+        task.wait(0.5)
+        setupIgnoreFolder(child)
+    end
+end)
+
+------------------------------------------------------------------------
+-- GAME MAP
+------------------------------------------------------------------------
 local function optimizeGameMap(gameMap)
     for _, paths in pairs(mapConfigs) do
         for _, path in ipairs(paths) do
@@ -171,13 +257,15 @@ local function optimizeGameMap(gameMap)
             if obj then obj:Destroy() end
         end
     end
-    local assets = getPath(workspace, {"MAPS", "GAME MAP", "Other", "ASSETS"})
-    removeChildrenExcept(assets, {"Security Doors"})
 
     local wallsWooden = getPath(workspace, {"MAPS", "GAME MAP", "Other", "WallsWooden"})
     if wallsWooden then
         removeChildrenByName(wallsWooden, "WallWooden")
     end
+
+    local assets = getPath(workspace, {"MAPS", "GAME MAP", "Other", "ASSETS"})
+    removeChildrenExcept(assets, {"Security Doors", "Stage Floor Stairs [STANDALONE]"})
+
     optimizeMeshes(gameMap)
     nukeAllLights(gameMap)
 end
@@ -190,7 +278,7 @@ if existingMap then optimizeGameMap(existingMap) end
 
 MAPS.ChildAdded:Connect(function(child)
     if child.Name == "GAME MAP" then
-        task.wait(2)
+        task.wait(5)
         optimizeGameMap(child)
     end
 end)
