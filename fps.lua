@@ -73,9 +73,7 @@ local function nukeAllLights(root)
     Lighting.Brightness     = 2
 end
 
-------------------------------------------------------------------------
--- POTATO LIGHTING
-------------------------------------------------------------------------
+-- POTATO LIGHTING🗣️🔥
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
@@ -101,9 +99,6 @@ for _, child in ipairs(Lighting:GetChildren()) do
     end
 end
 
-------------------------------------------------------------------------
--- LOBBY
-------------------------------------------------------------------------
 removeList({
     {"Lobby", "FullWinFolder", "1 Point"},
     {"Lobby", "LOBBY LIGHTS"},
@@ -120,9 +115,6 @@ if lobby then
     optimizeMeshes(lobby)
 end
 
-------------------------------------------------------------------------
--- MAP CONFIGS
-------------------------------------------------------------------------
 local mapConfigs = {
     warehouse = {
         {"MAPS", "GAME MAP", "Cameras"},
@@ -174,9 +166,6 @@ local mapConfigs = {
     },
 }
 
-------------------------------------------------------------------------
--- IGNORE FOLDER
-------------------------------------------------------------------------
 local ignoreRemoveAlways = {
     "VFX", "Map Ambience/Light", "LIGHT SOURCE", "LIGHTING"
 }
@@ -207,17 +196,14 @@ local function optimizeIgnoreChild(obj)
         applyBarrier(obj)
     end
 
-    -- SurfaceAppearance
     for _, desc in ipairs(obj:GetDescendants()) do
         if desc:IsA("SurfaceAppearance") then desc:Destroy() end
     end
 
-    -- Always-remove names
     for _, name in ipairs(ignoreRemoveAlways) do
         removeDescendantsByName(obj, name)
     end
 
-    -- Map-specific names (try all sets)
     for _, names in pairs(ignoreRemoveByMap) do
         for _, name in ipairs(names) do
             removeDescendantsByName(obj, name)
@@ -247,9 +233,6 @@ workspace.ChildAdded:Connect(function(child)
     end
 end)
 
-------------------------------------------------------------------------
--- GAME MAP
-------------------------------------------------------------------------
 local function optimizeGameMap(gameMap)
     for _, paths in pairs(mapConfigs) do
         for _, path in ipairs(paths) do
