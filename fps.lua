@@ -139,7 +139,6 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "PIPES"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SKIRTBOARD"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SPOTLIGHTS"},
-        {"MAPS", "GAME MAP", "Other", "STRUCTURE", "STAGE "},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TILES CERAMIC"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TRUSS"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "VENTS"},
@@ -216,7 +215,7 @@ local function setupIgnoreFolder(ignoreFolder)
         optimizeIgnoreChild(child)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
-        task.wait(0.1)
+        task.wait(1)
         optimizeIgnoreChild(child)
     end)
 end
@@ -228,7 +227,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(0.5)
+        task.wait(1)
         setupIgnoreFolder(child)
     end
 end)
