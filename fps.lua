@@ -70,8 +70,9 @@ local function nukeAllLights(root)
     end
     Lighting.Ambient        = Color3.fromRGB(255, 255, 255)
     Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-    Lighting.Brightness     = 2
+    Lighting.Brightness     = 5
 end
+
 
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
@@ -98,6 +99,15 @@ for _, child in ipairs(Lighting:GetChildren()) do
     end
 end
 
+local terrain = workspace:FindFirstChildOfClass("Terrain")
+if terrain then
+    terrain.Decoration    = false
+    terrain.WaterWaveSize = 0
+    terrain.WaterWaveSpeed = 0
+    terrain.WaterReflectance = 0
+    terrain.WaterTransparency = 0
+    terrain.CastShadow    = false
+end
 removeList({
     {"Lobby", "FullWinFolder", "1 Point"},
     {"Lobby", "LOBBY LIGHTS"},
@@ -166,7 +176,6 @@ local mapConfigs = {
     },
 }
 
-
 local ignoreRemoveAlways = {
     "VFX", "Map Ambience/Light", "LIGHT SOURCE", "LIGHTING"
 }
@@ -184,7 +193,7 @@ local function applyBarrier(obj)
     end
     for _, part in ipairs(parts) do
         part.Color        = Color3.fromRGB(0, 0, 0)
-        part.Transparency = 0.5
+        part.Transparency = 0.8
     end
 end
 
@@ -196,7 +205,7 @@ local function applyWallNonMesh(obj)
     for _, part in ipairs(parts) do
         if math.abs(part.Transparency - 0.95) < 0.01 then
             part.Color        = Color3.fromRGB(0, 0, 0)
-            part.Transparency = 0.5
+            part.Transparency = 0.8
         end
     end
 end
@@ -242,7 +251,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(2)
+        task.wait(1)
         setupIgnoreFolder(child)
     end
 end)
