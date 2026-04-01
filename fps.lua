@@ -101,11 +101,6 @@ end
 
 local terrain = workspace:FindFirstChildOfClass("Terrain")
 if terrain then
-    terrain.Decoration    = false
-    terrain.WaterWaveSize = 0
-    terrain.WaterWaveSpeed = 0
-    terrain.WaterReflectance = 0
-    terrain.WaterTransparency = 0
     terrain.CastShadow    = false
 end
 removeList({
@@ -239,7 +234,7 @@ local function setupIgnoreFolder(ignoreFolder)
         optimizeIgnoreChild(child)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
-        task.wait(1)
+        task.wait(0.1)
         optimizeIgnoreChild(child)
     end)
 end
@@ -251,7 +246,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(1)
+        task.wait(0.1)
         setupIgnoreFolder(child)
     end
 end)
@@ -284,7 +279,7 @@ if existingMap then optimizeGameMap(existingMap) end
 
 MAPS.ChildAdded:Connect(function(child)
     if child.Name == "GAME MAP" then
-        task.wait(5)
+        task.wait(1)
         optimizeGameMap(child)
     end
 end)
