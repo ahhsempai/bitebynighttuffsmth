@@ -73,14 +73,14 @@ local function nukeAllLights(root)
     Lighting.Brightness     = 2
 end
 
--- POTATO LIGHTING🗣️🔥
+
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
-Lighting.Brightness               = 2
+Lighting.Brightness               = 10
 Lighting.ClockTime                = 14
 Lighting.GeographicLatitude       = 0
-Lighting.ExposureCompensation     = 0
+Lighting.ExposureCompensation     = 1
 Lighting.EnvironmentDiffuseScale  = 0
 Lighting.EnvironmentSpecularScale = 0
 Lighting.Ambient                  = Color3.fromRGB(255, 255, 255)
@@ -139,6 +139,7 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "PIPES"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SKIRTBOARD"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "SPOTLIGHTS"},
+
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TILES CERAMIC"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "TRUSS"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "VENTS"},
@@ -176,15 +177,26 @@ local ignoreRemoveByMap = {
 }
 
 local function applyBarrier(obj)
+    local parts = obj:IsA("BasePart") and {obj} or {}
     for _, desc in ipairs(obj:GetDescendants()) do
-        if desc:IsA("BasePart") then
-            desc.Color        = Color3.fromRGB(0, 0, 0)
-            desc.Transparency = 0.5
-        end
+        if desc:IsA("BasePart") then table.insert(parts, desc) end
     end
-    if obj:IsA("BasePart") then
-        obj.Color        = Color3.fromRGB(0, 0, 0)
-        obj.Transparency = 0.5
+    for _, part in ipairs(parts) do
+        part.Color        = Color3.fromRGB(0, 0, 0)
+        part.Transparency = 0.5
+    end
+end
+
+local function applyWallNonMesh(obj)
+    local parts = obj:IsA("BasePart") and {obj} or {}
+    for _, desc in ipairs(obj:GetDescendants()) do
+        if desc:IsA("BasePart") then table.insert(parts, desc) end
+    end
+    for _, part in ipairs(parts) do
+        if math.abs(part.Transparency - 0.95) < 0.01 then
+            part.Color        = Color3.fromRGB(0, 0, 0)
+            part.Transparency = 0.5
+        end
     end
 end
 
@@ -193,6 +205,8 @@ local function optimizeIgnoreChild(obj)
 
     if obj.Name == "BARRIER" then
         applyBarrier(obj)
+    elseif obj.Name == "WALL NONMESH" then
+        applyWallNonMesh(obj)
     end
 
     for _, desc in ipairs(obj:GetDescendants()) do
@@ -215,7 +229,7 @@ local function setupIgnoreFolder(ignoreFolder)
         optimizeIgnoreChild(child)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
-        task.wait(1)
+        task.wait(0.1)
         optimizeIgnoreChild(child)
     end)
 end
@@ -227,7 +241,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(1)
+        task.wait(1.5)
         setupIgnoreFolder(child)
     end
 end)
