@@ -73,11 +73,10 @@ local function nukeAllLights(root)
     Lighting.Brightness     = 2
 end
 
-
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
-Lighting.Brightness               = 10
+Lighting.Brightness               = 5
 Lighting.ClockTime                = 14
 Lighting.GeographicLatitude       = 0
 Lighting.ExposureCompensation     = 1
@@ -114,6 +113,7 @@ if lobby then
     removeDescendantsByName(lobby, "WALL GRUNGE")
     optimizeMeshes(lobby)
 end
+
 
 local mapConfigs = {
     warehouse = {
@@ -166,6 +166,7 @@ local mapConfigs = {
     },
 }
 
+
 local ignoreRemoveAlways = {
     "VFX", "Map Ambience/Light", "LIGHT SOURCE", "LIGHTING"
 }
@@ -173,7 +174,7 @@ local ignoreRemoveAlways = {
 local ignoreRemoveByMap = {
     forest    = {"Twigs [CASTSGADOW]", "Plant", "Naked Branches", "Canned Food [CASTSHADOW]", "Branches Filler", "BOUGHS", "Rocks2 [CASTSHADOW]"},
     warehouse = {"Conveyor Variant B", "Evidence Mockup", "HOLSTER WALL FILLERS", "LIGHTING", "Junction Electricity", "MESH WALL", "Perforated Chain Metal Link", "Vent Lighting", "WStrip", "Wiring Screw", "YStrip", "YStriped Square"},
-    pizzeria  = {"Antislip Mat", "Arcade Actual Light", "Arcade Rod Ends", "BOUNDARY", "Balloon", "Bench Leather", "DECALS NORMALS", "Door Handle", "LIGHT", "Middle-Pipe", "Monitor", "Monitor Screen", "Pipe", "SkirtBoard", "Spotlight"},
+    pizzeria  = {"Antislip Mat", "Arcade Actual Light", "Arcade Rod Ends", "Balloon", "Bench Leather", "DECALS NORMALS", "Door Handle", "LIGHT", "Middle-Pipe", "Monitor", "Monitor Screen", "Pipe", "SkirtBoard", "Spotlight"},
 }
 
 local function applyBarrier(obj)
@@ -205,7 +206,7 @@ local function optimizeIgnoreChild(obj)
 
     if obj.Name == "BARRIER" then
         applyBarrier(obj)
-    elseif obj.Name == "WALL NONMESH" then
+    elseif obj.Name == "BOUNDARY" then
         applyWallNonMesh(obj)
     end
 
@@ -229,7 +230,7 @@ local function setupIgnoreFolder(ignoreFolder)
         optimizeIgnoreChild(child)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
-        task.wait(0.1)
+        task.wait(1)
         optimizeIgnoreChild(child)
     end)
 end
@@ -241,7 +242,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(1.5)
+        task.wait(2)
         setupIgnoreFolder(child)
     end
 end)
