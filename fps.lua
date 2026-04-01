@@ -73,7 +73,6 @@ local function nukeAllLights(root)
     Lighting.Brightness     = 5
 end
 
-
 Lighting.GlobalShadows            = false
 Lighting.FogEnd                   = 100000
 Lighting.FogStart                 = 100000
@@ -136,7 +135,6 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "Landmark"},
     },
     pizzeria = {
-        {"MAPS", "GAME MAP", "Other", "BOUNDARIES"},
         {"MAPS", "GAME MAP", "Other", "FENCES"},
         {"MAPS", "GAME MAP", "Other", "DECORATION"},
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "LIGHTS"},
@@ -200,7 +198,7 @@ local function applyWallNonMesh(obj)
     for _, part in ipairs(parts) do
         if math.abs(part.Transparency - 0.95) < 0.01 then
             part.Color        = Color3.fromRGB(0, 0, 0)
-            part.Transparency = 0.8
+            part.Transparency = 0.7
         end
     end
 end
@@ -214,14 +212,17 @@ local function optimizeIgnoreChild(obj)
         applyWallNonMesh(obj)
     end
 
+    -- SurfaceAppearance
     for _, desc in ipairs(obj:GetDescendants()) do
         if desc:IsA("SurfaceAppearance") then desc:Destroy() end
     end
 
+    -- Always-remove names
     for _, name in ipairs(ignoreRemoveAlways) do
         removeDescendantsByName(obj, name)
     end
 
+    -- Map-specific names (try all sets)
     for _, names in pairs(ignoreRemoveByMap) do
         for _, name in ipairs(names) do
             removeDescendantsByName(obj, name)
@@ -234,7 +235,7 @@ local function setupIgnoreFolder(ignoreFolder)
         optimizeIgnoreChild(child)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
-        task.wait(0.1)
+        task.wait(0.5)
         optimizeIgnoreChild(child)
     end)
 end
@@ -246,7 +247,7 @@ end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(0.1)
+        task.wait(0.5)
         setupIgnoreFolder(child)
     end
 end)
@@ -279,7 +280,7 @@ if existingMap then optimizeGameMap(existingMap) end
 
 MAPS.ChildAdded:Connect(function(child)
     if child.Name == "GAME MAP" then
-        task.wait(1)
+        task.wait(2)
         optimizeGameMap(child)
     end
 end)
