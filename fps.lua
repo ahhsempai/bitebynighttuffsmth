@@ -121,7 +121,6 @@ end
 
 local mapConfigs = {
     warehouse = {
-        {"MAPS", "GAME MAP", "Cameras"},
         {"MAPS", "GAME MAP", "Other", "Base Screws"},
         {"MAPS", "GAME MAP", "Other", "Alarms"},
         {"MAPS", "GAME MAP", "Other", "BAY"},
@@ -149,7 +148,6 @@ local mapConfigs = {
         {"MAPS", "GAME MAP", "Other", "STRUCTURE", "WINDOWS"},
     },
     forest = {
-        {"MAPS", "GAME MAP", "Cameras"},
         {"MAPS", "GAME MAP", "Thunder"},
         {"MAPS", "GAME MAP", "Other", "AFTON HOUSE"},
         {"MAPS", "GAME MAP", "Other", "Barbed Wires"},
