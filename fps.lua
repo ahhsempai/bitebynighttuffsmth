@@ -4,6 +4,25 @@ local Players   = game:GetService("Players")
 
 local lp = Players.LocalPlayer
 
+local PROTECTED_NAMES = {
+    ["EscapePoint"] = true,
+}
+
+local function isProtected(obj)
+    if not obj then return false end
+    if PROTECTED_NAMES[obj.Name] then return true end
+    local ignoreFolder = workspace:FindFirstChild("IGNORE")
+    if ignoreFolder then
+        for name in pairs(PROTECTED_NAMES) do
+            local protected = ignoreFolder:FindFirstChild(name)
+            if protected and (obj == protected or obj:IsDescendantOf(protected)) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 if not game:IsLoaded() then
     repeat
         task.wait()
@@ -65,21 +84,21 @@ end
 local function removeList(paths)
     for _, path in ipairs(paths) do
         local obj = getPath(workspace, path)
-        if obj and not isPlayer(obj) then obj:Destroy() end
+        if obj and not isPlayer(obj) and not isProtected(obj) then obj:Destroy() end
     end
 end
 
 local function removeChildrenByName(parent, name)
     if not parent then return end
     for _, child in ipairs(parent:GetChildren()) do
-        if child.Name == name and not isPlayer(child) then child:Destroy() end
+        if child.Name == name and not isPlayer(child) and not isProtected(child) then child:Destroy() end
     end
 end
 
 local function removeDescendantsByName(root, name)
     if not root then return end
     for _, obj in ipairs(root:GetDescendants()) do
-        if obj.Name == name and not isPlayer(obj) then obj:Destroy() end
+        if obj.Name == name and not isPlayer(obj) and not isProtected(obj) then obj:Destroy() end
     end
 end
 
@@ -91,14 +110,17 @@ local function removeChildrenExcept(parent, exceptions)
             if child.Name == name then keep = true; break end
         end
         if isPlayer(child) then keep = true end
+        if isProtected(child) then keep = true end
         if not keep then child:Destroy() end
     end
 end
 
 local function stripTextures(obj)
     if isPlayer(obj) then return end
-    
+    if isProtected(obj) then return end
+
     local function deepClean(target)
+        if isProtected(target) then return end
         if target:IsA("SurfaceAppearance") or target:IsA("Texture") or target:IsA("Decal") then
             target:Destroy()
         end
@@ -112,7 +134,8 @@ end
 
 local function optimizePart(obj)
     if isPlayer(obj) then return end
-    
+    if isProtected(obj) then return end
+
     if obj:IsA("MeshPart") then
         obj.RenderFidelity = Enum.RenderFidelity.Automatic
     end
@@ -130,7 +153,7 @@ end
 
 local function nukeAllLights(root)
     for _, obj in ipairs(root:GetDescendants()) do
-        if not isPlayer(obj) and (obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight")) then
+        if not isPlayer(obj) and not isProtected(obj) and (obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight")) then
             obj:Destroy()
         end
     end
@@ -153,6 +176,7 @@ end
 
 local function applyBarrierStyle(obj)
     if isPlayer(obj) then return end
+    if isProtected(obj) then return end
     stripTextures(obj)
     if obj:IsA("BasePart") then
         obj.Color        = Color3.fromRGB(0, 0, 0)
@@ -172,7 +196,7 @@ local function optimizeContainer(root)
 
     local snapshot = root:GetDescendants()
     for _, obj in ipairs(snapshot) do
-        if not obj.Parent or isPlayer(obj) then continue end
+        if not obj.Parent or isPlayer(obj) or isProtected(obj) then continue end
 
         if obj.Name == "BARRIER" or obj.Name == "BOUNDARY" then continue end
 
@@ -202,6 +226,7 @@ end
 local function watchForLateTextures(container)
     container.DescendantAdded:Connect(function(desc)
         if isPlayer(desc) then return end
+        if isProtected(desc) then return end
         if desc:IsA("SurfaceAppearance") or desc:IsA("Texture") or desc:IsA("Decal") then
             task.defer(function()
                 if desc.Parent then desc:Destroy() end
@@ -317,7 +342,7 @@ local function optimizeGameMap(gameMap)
     for _, paths in pairs(mapConfigs) do
         for _, path in ipairs(paths) do
             local obj = getPath(workspace, path)
-            if obj and not isPlayer(obj) then obj:Destroy() end
+            if obj and not isPlayer(obj) and not isProtected(obj) then obj:Destroy() end
         end
     end
 
@@ -336,11 +361,12 @@ end
 
 local function setupIgnoreFolder(ignoreFolder)
     for _, child in ipairs(ignoreFolder:GetChildren()) do
+        if isProtected(child) then continue end
         if not isPlayer(child) then
             if child.Name == "BARRIER" or child.Name == "BOUNDARY" then
                 applyBarrierStyle(child)
                 for _, sub in ipairs(child:GetDescendants()) do
-                    if not isPlayer(sub) then sub:Destroy() end
+                    if not isPlayer(sub) and not isProtected(sub) then sub:Destroy() end
                 end
             else
                 optimizeContainer(child)
@@ -349,7 +375,7 @@ local function setupIgnoreFolder(ignoreFolder)
     end
     ignoreFolder.ChildAdded:Connect(function(child)
         task.wait(1)
-        if not isPlayer(child) then optimizeContainer(child) end
+        if not isPlayer(child) and not isProtected(child) then optimizeContainer(child) end
     end)
 end
 
@@ -360,7 +386,7 @@ if ignoreFolder then setupIgnoreFolder(ignoreFolder) end
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "IGNORE" then
-        task.wait(1)
+        task.wait(0.5)
         setupIgnoreFolder(child)
     end
 end)
